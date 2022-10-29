@@ -1,0 +1,112 @@
+- login as root : su -
+- Add User in sudo Grp : usermod -aG sudo username
+- Check if user is in sudo grp: getent group sudo
+- install wget(wget open source tool for dowloading filesfrom WEB repo)
+- install Vim : sudo apt-get installl VIM
+- install SSH && SSH config : sudo apt-get update / sudo apt install openssh-server
+- Check The SSH srv status : sudo systemctl status ssh
+- Changing Port(4242) : sudo nano/etc/ssh/sshd_config: (Find #Port 22 replace by Port 4242)
+- Check if port settings got right: sudo grep Port /etc/ssh/sshd_config
+- install UFW(Uncomplicated Firewall) : apt-get install ufw
+- Enable UFW: sudo ufw enable
+- Check the status (UFW): sudo ufw status numbred
+- Config(ufw rules): sudo ufw allow ssh
+config the port rules: sudo ufw allow 4242
+                                                        ----Conectig SSH server-----
+1 - Go to VirtualBox-> Choose the VM->Select Settings
+2. Choose “Network”-> “Adapter 1"->”Advanced”->”Port Forwarding”
+3- add rule : Name = Rule1/ Protocol = TCP / Host Port = 42 / Guest Port = 42 
+4. Restart SSH server (go to the your VM machine) : sudo systemctl restart ssh
+5. Check ssh status: sudo service sshd status
+6- Quit cnx : exit
+                                                        ---------SET PASSWORD---------
+- Installing password quality checking library (libpam-pwquality): sudo apt-get install libpam-pwquality
+- change the lenght : sudo nano /etc/pam.d/commoc/password
+- Find the line (password [success=2 default=ignore] pam_unix.so obscure)
+1 - add exttra word : minlen=10 at the end : password [success=2 default=ignore] pam_unix.so obscure sha512 minlen=10
+2 - To set at least one upper-case letter in the password, add a word ‘ucredit=-1’ at the end of the following line.
+    . Find this line  (password    requisite         pam_pwquality.so retry=3)
+    . Add these values (min lower-case 1 letter, min upper-case 1 letter, min digit 1, max same letter repetition 3,
+    to check if the password contains the user name, the minimum number of characters that must be different from the old password=7)
+    {
+        password    requisite         pam_pwquality.so retry=3 lcredit =-1 ucredit=-1 dcredit=-1 maxrepeat=3 usercheck=0 difok=7 enforce_for_root
+
+    }
+
+---Password Expiration :
+{
+    sudo nano /etc/login.defs
+}
+    {
+        Find this part :{
+                            PASS_MAX_DAYS 9999 ||                PASS_MAX_DAYS 30
+                            PASS_MIN_DAYS 0    || Change to ==>  PASS_MIN_DAYS 2                                                             
+                            PASS_WARN_AGE 7    ||                PASS_WARN_AGE 7
+                        }
+    }
+reboot the change affects : sudo reboot 
+
+                                                    -----Creat Group ----
+- sudo groupadd user42
+- sudo groupadd evaluating
+
+- Check if grp created : getent group;
+                                                -----Create user assign into grp-----
+- Check all user: cut -d: -f1 /etc/passwd
+- Create the user : sudo adduser new_username
+- Assign an user into "avaluating" GRP (this is for ehwn you defend):
+    {
+        sudo usermod -aG user42  your_username
+        sudo useremod -aG evaluating you_new_user
+    }
+-Check if the user is in Group
+{
+    getent group user42
+    getent group evaluating
+}
+
+- Check which grps user acccont  belongs: groups
+
+- Check is passwrd rules Working in user :  change -l you_new_username
+
+                                            -----Config sudoers grp-----
+Go to file : sudo nano /etc/sudoers
+
+- Limit the password  to 3 attempts in the event of an incorrect pass:
+            {
+                Defaults    secure_path"..."
+                Defaults    passwd_tries=3
+            }
+For wrong pass add:
+{
+    Defaults    badpass_message="Password is wrong, please fot elik pc ! :)";
+
+}   
+Each action log file has be saved in the /var/log/sudo/folder
+{
+    Defaults    logfile="/var/log/sudo/sudo.log"
+    Defaults    log_input,log_output
+}
+For security reasons too, the paths that can be used by sudo must be restricted.
+{ 
+    Example : /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+    add to you sudoers file
+        {
+            Defaults   secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+
+        }
+
+}
+                                -----Change Hostname-----
+1 - Check current hostname : hostnamectl;
+2 -change the hostname : hostnamectl set-hostname new_hostname;
+3 - change /etc/hosts file : sudo nano /etc/hosts
+4 - change old hostname with new one;
+    {
+        12.0.0.1 localhost ==> 127.0.0.1 new_hostname
+    }
+4 - Reboot and check the change : sudo reboot
+
+
+    
+
