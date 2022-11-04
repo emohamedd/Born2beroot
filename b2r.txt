@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo "Broadcast message from ${USER}@${HOSTNAME} (tty1) ($(date)):"
+echo "    #Architecture: $(uname -ma)"
+echo "    #CPU physicale : $(lscpu | awk 'NR==5' | awk '{print $2}')"
+echo "    #vCPU : $(cat /proc/cpuinfo | grep processor | wc -l)"
+echo "    #Memory Usage: $(free -m | awk 'NR==2' | awk '{print $3}')/$(free -m | awk 'NR==2' | awk '{print $2}')MB ($(awk '/MemTotal/{t=$2}/MemAvailable/{a=$2}END{print 100-100*a/t"%"}' /proc/meminfo))"
+echo "    #Disk Usage: $(df -H / | awk 'NR==2' | awk '{print $3}')/$(df -H / | awk 'NR==2' | awk '{print $2}') ($(df -H / | awk 'NR==2' | awk '{print $5}'))"
+echo "    #CPU load: $(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}')"
+echo "    #Last boot: $(who -b | awk '{print $3 " " $4}')"
+LVM="$(vgdisplay | awk 'NR==4' | awk '{print $2}')"
+L="on"
+if [[ "$LVM" = "lvm2" ]]; then
+    L="yes"
+else L="no"
+fi
+echo "    #LVM use : $L"
+echo "    #Connections TCP : $(ss -s | awk 'NR==7' | awk '{print $2}') ESTABLISHED"
+echo "    #User log: $(who | wc -l)"
+echo "    #Network: ip $(hostname -I)($(ip link | grep ether | awk '{print $2}'))"
+echo "    #Sudo : $(cat /$USER/.bash_history | grep sudo | wc -l) cmd"
